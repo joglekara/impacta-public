@@ -1,0 +1,252 @@
+% IMPACTA Greyhound BETA Input Deck 
+%
+% =====================================================================================% 
+% TEMPLATE!
+% =====================================================================================% 
+% Setup Directory Structure
+%
+	Out_Dir = tstqZ1wZ
+	In_Dir	= impacta_data_in
+%
+% Number of digits precision for output files
+%
+	out_digs = 10 
+%
+% =====================================================================================% 
+%
+% Simulation Time Parameters 
+%
+	N_MAX = 1
+	dt = 1.0
+	Ndump = 1
+	T0 = 0
+%
+% ========================================================% 
+% Simulation Grid Parameters 
+%
+	Nx = 48
+	Ny = 2
+	Nv = 800
+% coordinates can be xy, rt and rz (eventually) 
+	coordinates = xy
+%
+% Values of the lower spatial boundaries 
+%
+	xmin = 0
+    ymin = 0 
+% grids can be specified as: 
+%					cst (val) - increasing by a constant value 
+%					max (val) - such that Nx*d = max-min 
+%					grd (val1 val2....) - specified values 
+%					fle (filename) - get values from text file 
+%					fnc {(function)} - use a specified function 
+	dxgrid = max 10000  
+	dygrid = max 10000 
+	dvgrid = max 8.0
+%
+% =====================================================================================% 
+%
+ Components of fields and distribution functions 
+%
+ 
+	Num_B = 1, 
+	E_On  = true 
+ 
+%f0 is always on 
+ 
+	f1_On = true, 
+	f2_On = false, 
+	f3_On = false, 
+ 
+%
+% =====================================================================================% 
+%
+% Matrix Solver and Picard Iteration tolerances 
+%
+	zero_tol = 1e-50 
+	lag_tol  = 1e-15
+	KSP_atol = 1.0e-30 
+	KSP_rtol = 1.0e-14
+	KSP_dtol = 1.0e4 
+	KSP_MAX_IT = 1000 
+	KSP_pc_type = bjacobi 
+	KSP_method = gmres 
+	KSP_monitor = false 
+%
+% Matrix Solver and Picard Iteration tolerances 
+%
+% Initial Conditions 
+%
+	A  = 1000
+	Z0 = 1
+	Ti = 0.0
+	Z(x,y) = cst 1.0 
+	ne(x,y) = cst 1.0 
+	ni(x,y) = cst 1.0 
+	Te(x,y) = fnc {1.0+0.00001/pi*cos(pi*x/5000)} %fnc {0.5+0.0001/pi*(sin(pi*x/10000)*sin(pi*y/10000))}
+	Bx(x,y) = cst 0.0 
+	By(x,y) = cst 0.0 
+	Bz(x,y) = fnc {0.0*0.353553390593274}
+%
+% =====================================================================================% 
+%
+% Constants 
+%
+	w_pe_over_nu_ei	= 250.0
+	v_te_over_c = 0.04
+%
+% =====================================================================================% 
+%
+% Switches 
+%
+	f0_equation = true 
+	f1_equation = true 
+	f2_equation = true 
+	f3_equation = true 
+	E_equation = true 
+	B_equation = true 
+ 
+% f0 equation components 
+	df0/dt = true 
+	inf0_grad_f1 = true 
+	inf0_Edf1dv = true 
+	Cee0 = true 
+ 
+% f1 equation components 
+	df1/dt = true 
+	inf1_vgradf0 = true 
+	inf1_Edf0dv = true
+	inf1_f1xB  = true 
+	Cei = true 
+	Cee1 = true 
+% 
+% f2 equation components 
+	df2/dt = true 
+ 
+% f3 Weibel damping 
+	damp_Weibel = true 
+ 
+% E equation components 
+	disp_j = true 
+% Initial step 
+	initial_condition = true
+	initial_step_dt_frac = 1e-2
+%
+% =====================================================================================% 
+%
+% Collision Operator 
+%
+	RB_D_it_tol = 1e-15 
+	RB_D_it_max = 10 
+	RB_iterate = true
+%
+% =====================================================================================% 
+%
+% Heating 
+
+	Heat_Source = none 
+	Heating(x,y) = cst 0.0 
+	Heating(t) = cst 1.0
+	vosc = 0.2
+	polarization = c
+	
+	% vosc is multiplication factor for Heating(x,y) array
+        % pol value can be x,y,z c or d for 
+        % x,y,z, circular in xy plane or 45 deg to x&y
+
+        % NB NB NB vosc doesn't correspond to an equal energy pulse
+        % for both circular and linear polarizations
+        % in other words vosc is the peak oscillation for 
+        % both linear and circular
+        			
+%
+% =====================================================================================% 
+%
+% Gradients in z
+%
+	Gradn_z(x,y)/n = cst 0.0  
+	Gradn_z(t)/n = cst 0.0 
+	GradT_z(x)/T = cst 0.0 
+	GradT_z(y)/T = cst 0.0 
+	GradT_z(t)/T = cst 0.0 
+%
+% =====================================================================================% 
+%
+% Data Handling 
+%
+	if_dump_ne = true 
+	if_dump_ni = true 
+	if_dump_Ci = true 
+	if_dump_Z  = true 
+	if_dump_Te = true 
+	if_dump_Ue = true 
+	if_dump_je = true 
+	if_dump_q  = true 
+	if_dump_P  = true 
+	if_dump_E  = true 
+	if_dump_B  = true 
+	if_dump_wt = true 
+	if_dump_VN = true 
+	if_dump_eta = true 
+	if_dump_f0 = true
+	if_dump_f1 = true
+	if_dump_f2 = true	
+	f_ndump = 2
+%
+% =====================================================================================% 
+% Boundary conditions
+%
+% bounds can be:
+%  p - periodic
+%  r - reflecting, bz flips across boundary
+%  o - open boundaries
+%  b - reflecting, bz constant over boundary
+%
+	x_bound = p
+	y_bound = p
+% Fixed Boundaries
+%
+	fix_f0 = 0 0 0 0 
+	fix_f1_E = 0 0 0 0 
+	fix_f2 = 0 0 0 0 
+	fix_B = 0 0 0 0 
+	fix_ni = 0 0 0 0 
+	fix_Ci = 0 0 0 0 
+%
+% =====================================================================================% 
+%
+% Smoothing Kernel -> to help with checkerboard instability
+% basically introduces numerical diffusion to f1
+% 5 point stencil, average over points, first element is i,j
+	smoothing_kernel = 1.0 0.0 0.0 0.0 0.0
+%
+% =====================================================================================% 
+% Ionization
+%
+% model can be "none", "saha" or "TF"
+	ionization_model = none
+% in ion hydrodynamic model	
+	quasineutrality = false
+% =====================================================================================% 
+%% Ray tracing 
+tr_bool = false	     % Switch 
+beam_width = 3535  % Beam width in mfp 	
+beam_res = 100	     % # of rays/beam 
+boundary = y		
+shape = g
+n_c = 0.915	    % Critical density
+x_0 = 10.0		
+y_0 = 10.0			
+theta = 66.5
+dtheta = 4.0  % In degrees
+ds = 0.1
+intensity_diff_steps = 64
+%				
+%		
+%%%%%% Two temperature Electrons %%%%%%%%%%%
+temp_multiplier = 1.0
+fraction = 0.0
+%
+%
+%
+end
