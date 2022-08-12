@@ -24,9 +24,11 @@
 % ========================================================% 
 % Simulation Grid Parameters 
 %
-	Nx = 256
+	%Nx = 256
+	Nx = 64
 	Ny = 2
-	Nv = 256
+	Nv = 64
+	%Nv = 256
 % coordinates can be xy, rt and rz (eventually) 
 	coordinates = xy
 %

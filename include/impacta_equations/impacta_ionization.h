@@ -50,7 +50,7 @@ switch (IMPACTA_ions::ionization_on)
 		}
 		}
 		
-  MPI::COMM_WORLD.Barrier();
+  MPI_Barrier(MPI_COMM_WORLD);
   IMPACTA_Share_Moment(c,M, &Initial_Conditions::C_istar[0]);
   
   // Now apply 5 point smoothing filter to Z: every N_Z_smooth steps
@@ -79,7 +79,7 @@ switch (IMPACTA_ions::ionization_on)
 	Initial_Conditions::C_istar[0].set(i,j,Initial_Conditions::C_istar[1].get(&i,&j)); 
 	}
 	}
-	MPI::COMM_WORLD.Barrier();
+	MPI_Barrier(MPI_COMM_WORLD);
 	IMPACTA_Share_Moment(c,M, &Initial_Conditions::C_istar[0]);
 	
 	}
@@ -105,7 +105,7 @@ switch (IMPACTA_ions::ionization_on)
     }
   }
   
-  MPI::COMM_WORLD.Barrier();
+  MPI_Barrier(MPI_COMM_WORLD);
   IMPACTA_Share_Moment(c,M, &Initial_Conditions::Z);
   return 0;
 }

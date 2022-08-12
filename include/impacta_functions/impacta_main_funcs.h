@@ -37,7 +37,7 @@ int IMPACT_Lagged_Loop(IMPACT_Config *config1, IMPACT_MPI_Config *MPIconf,
 		       IMPACT_ParVec *allvar_lagged_old, 
 		       int *n,int *lagged)
 {
-  MPI::COMM_WORLD.Barrier();
+  MPI_Barrier(MPI_COMM_WORLD);
   IMPACT_Soft_Exit(MPIconf,0);
   
   IMPACT_Cee0(config1, MPIconf,allvar_lagged,f0,*lagged);
@@ -169,12 +169,12 @@ int IMPACT_Main_Loop(IMPACT_Config *config1, IMPACT_MPI_Config *MPIconf,
         IMPACT_Matrix n_mat(config1->Nx(),config1->Ny());
         IMPACT_IMatrix nemat,Bmat,localint;
     
-        MPI::COMM_WORLD.Barrier();
+        MPI_Barrier(MPI_COMM_WORLD);
         new_ne(allvar,f0,config1,MPIconf,&ne);
         nemat.copy(&ne.values);
         IMPACTA_Share_Moment(config1,MPIconf,&nemat);
 
-        MPI::COMM_WORLD.Barrier();
+        MPI_Barrier(MPI_COMM_WORLD);
         new_B(allvar,B,config1,MPIconf,&BM,&x1);
         Bmat.copy(&BM.values);
         IMPACTA_Share_Moment(config1,MPIconf,&Bmat); 
@@ -184,12 +184,12 @@ int IMPACT_Main_Loop(IMPACT_Config *config1, IMPACT_MPI_Config *MPIconf,
         tracerunner(nemat,Bmat,stenops,config1,MPIconf);
         timel = std::time(0)-timel;
 
-        MPI_Reduce(&timel,&timeg,1, MPI_DOUBLE, MPI_SUM,0,MPI::COMM_WORLD);
+        MPI_Reduce(&timel,&timeg,1, MPI_DOUBLE, MPI_SUM,0,MPI_COMM_WORLD);
         timeg=timeg/MPIconf->size();
 
         if (!MPIconf->rank()) std::cout << "\n\n Average time for raytracing: " << timeg << " seconds \n\n";
 
-        MPI::COMM_WORLD.Barrier();
+        MPI_Barrier(MPI_COMM_WORLD);
 
       }
 //  !!!!!!!!!!!!!!! //////////////////
@@ -227,7 +227,7 @@ int IMPACT_Main_Loop(IMPACT_Config *config1, IMPACT_MPI_Config *MPIconf,
       Imessage<<"\n ******** n = "<<number<<"\n\n"<<BCYAN<<T_ULINE<<'\n'<<ENDFORMAT;
       std::cout<<Imessage.str();
     }
-  MPI::COMM_WORLD.Barrier();
+  MPI_Barrier(MPI_COMM_WORLD);
   //____________________________________________________________
   // ******* START OF LAGGED LOOP *******
   
@@ -236,7 +236,7 @@ int IMPACT_Main_Loop(IMPACT_Config *config1, IMPACT_MPI_Config *MPIconf,
 				 argstr,f0,f1,f2,f3,E,B,allvar,
 			     allvar_lagged,allvar_lagged_old,
 			     n,&lagged);
-    MPI::COMM_WORLD.Barrier();
+    MPI_Barrier(MPI_COMM_WORLD);
     
     // Check maximum picard iterations is not exceeded
     if (lagged>zerotolerance::max_picard_its&&zerotolerance::max_picard_its) {

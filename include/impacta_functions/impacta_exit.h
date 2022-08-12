@@ -17,7 +17,7 @@ int IMPACT_Exit(IMPACT_MPI_Config *M,int status)
      - provides summary and diagnostic information if certain runtime
      options are chosen (e.g., -log_summary). 
    */
-   MPI::COMM_WORLD.Barrier();
+   MPI_Barrier(MPI_COMM_WORLD);
   if (status&&!M->rank())
     {
       double totaltime=(IMPACT_Diagnostics::end_time
@@ -43,7 +43,7 @@ int IMPACT_Exit(IMPACT_MPI_Config *M,int status)
 #endif
 
   if (M->size()>1)
-    MPI::Finalize();
+    MPI_Finalize();
   
   exit(0);
   return 0;
@@ -51,8 +51,9 @@ int IMPACT_Exit(IMPACT_MPI_Config *M,int status)
 int IMPACT_Bad_Exit(int petsc_on)
 {
 
-  MPI::COMM_WORLD.Barrier();
-  int size=MPI::COMM_WORLD.Get_size();
+  MPI_Barrier(MPI_COMM_WORLD);
+  int size; //=MPI::COMM_WORLD.Get_size();
+   MPI_Comm_size(MPI_COMM_WORLD, &size ); 
   PetscErrorCode ierr=0;
   if (petsc_on) ierr = PetscFinalize();CHKERRQ(ierr);
   
@@ -60,7 +61,7 @@ int IMPACT_Bad_Exit(int petsc_on)
   if (!IMPACT_Diagnostics::noxnbody) ierr = lvisit_nbody2_close();
 #endif 
   
-  if (size>1) MPI::Finalize();
+  if (size>1) MPI_Finalize();
   exit(0);
   return ierr;
 }
@@ -74,7 +75,7 @@ void IMPACT_wait ( int seconds )
 int IMPACT_Soft_Exit(IMPACT_MPI_Config *M,int reason)
 {
 
-  MPI::COMM_WORLD.Barrier();
+  MPI_Barrier(MPI_COMM_WORLD);
   int result=1;
   int *allresults;
   allresults = new int[M->size()];
@@ -94,8 +95,9 @@ int IMPACT_Soft_Exit(IMPACT_MPI_Config *M,int reason)
     allresults[i]=1;  
 
 
-  MPI::COMM_WORLD.Barrier();
-  MPI::COMM_WORLD.Allgather(&result,1,MPI::INT,&allresults[0],1,MPI::INT);
+  MPI_Barrier(MPI_COMM_WORLD);
+  //MPI::COMM_WORLD.Allgather(&result,1,MPI::INT,&allresults[0],1,MPI::INT);
+  MPI_Allgather(&result,1,MPI_INT,&allresults[0],1,MPI_INT,MPI_COMM_WORLD);
 
   result=1;
   
@@ -113,7 +115,7 @@ int IMPACT_Soft_Exit(IMPACT_MPI_Config *M,int reason)
 #endif
       if (M->size()>1)
 	{
-	  MPI::Finalize();// close mpi
+	  MPI_Finalize();// close mpi
 	  std::cout<<ENDFORMAT<<"Rank: "<<M->rank()<<" Finalize OK\n";   
 	}  
       if (!M->rank())

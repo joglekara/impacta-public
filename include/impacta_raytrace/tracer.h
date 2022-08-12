@@ -572,7 +572,7 @@ void tracerunner(IMPACT_Matrix &n_mat, IMPACT_Matrix &Bz_mat,  IMPACT_StenOps *s
 
 	/////////////////////////////////////////////////////////////
 	// Determine STEP SIZE //////////////////////////////////////
-	int n_max;
+	// int n_max; // apparently not used AGRT 2022
 	
 	int i =1;
 	double dxmin = conf->dx(&i);
@@ -599,13 +599,13 @@ void tracerunner(IMPACT_Matrix &n_mat, IMPACT_Matrix &Bz_mat,  IMPACT_StenOps *s
 	if (dxmin > dymin)
 	{
 		ds *= dymin;
-		n_max = (conf->get_xmax()-conf->get_xmin())/ds*4;
+		//n_max = (conf->get_xmax()-conf->get_xmin())/ds*4;
 	}
 	else 
 	{
 		//globalconsts::pi*
 		ds *= dxmin; 
-		n_max = (conf->get_ymax()-conf->get_ymin())/ds*4;
+		//n_max = (conf->get_ymax()-conf->get_ymin())/ds*4;
 	}
 	// std::cout<< "\n\n ds: " << ds << "\n\n";
 	/////////////////////////////////////////////////////////////
@@ -693,7 +693,7 @@ void tracerunner(IMPACT_Matrix &n_mat, IMPACT_Matrix &Bz_mat,  IMPACT_StenOps *s
 ///////////////------------------------------------------------------------///////////////	
 	// Live Loop Quantity containers
 	double livemult;
-	double pertcoeff;
+	//double pertcoeff;
 	double temploc;
 	double dx_orig = conf->xb(1)-conf->xb(0); 
 	double dy_orig = conf->yb(1)-conf->yb(0);  
@@ -722,7 +722,7 @@ void tracerunner(IMPACT_Matrix &n_mat, IMPACT_Matrix &Bz_mat,  IMPACT_StenOps *s
 	const int ifnotdump = 0; //((*tstep+1) % ndump)+1;
 
 	//std::cout<< "\n ifnotdump : " << ifnotdump << "\n";
-	int rayndump=1;//IMPACT_Heating::beam_res/10;
+	//int rayndump=1;//IMPACT_Heating::beam_res/10;
 	int ifraydump;
 
 	std::ofstream raystream;
@@ -740,7 +740,7 @@ void tracerunner(IMPACT_Matrix &n_mat, IMPACT_Matrix &Bz_mat,  IMPACT_StenOps *s
 	int local_ray_total=(M->rank()+1)*IMPACT_Heating::beam_res;
 	int totalbeamres = M->size()*IMPACT_Heating::beam_res;
 	double sigma = IMPACT_Heating::beam_width/sqrt(8*log(2));
-	double totalGaussianbeamwidth = 2.0*sigma;
+	//double totalGaussianbeamwidth = 2.0*sigma;
 	bool currentraydir;
 
 	double x0,y0;
@@ -1070,8 +1070,8 @@ void tracerunner(IMPACT_Matrix &n_mat, IMPACT_Matrix &Bz_mat,  IMPACT_StenOps *s
 
 			localval = localint.get(i,j);
 
-			MPI_Reduce(&localval,&gval,1, MPI_DOUBLE, MPI_SUM,0,MPI::COMM_WORLD);
-			MPI_Bcast(&gval,1,MPI_DOUBLE,0,MPI::COMM_WORLD);
+			MPI_Reduce(&localval,&gval,1, MPI_DOUBLE, MPI_SUM,0,MPI_COMM_WORLD);
+			MPI_Bcast(&gval,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 
 			//std::cout<<"\n From rank: "<< M->rank() << " ----- localval = " << localval <<"------ gval = " << gval << "\n";
 	//         if (!(M->rank())) {

@@ -328,7 +328,7 @@ if (objecttype==1||objecttype==4||objecttype==5)
     default:
       break;
     }
-  MPI::COMM_WORLD.Barrier();
+  MPI_Barrier(MPI_COMM_WORLD);
   // Now multiply values
   for (int i=istart;i<=iend;++i) 
     for (int j=1;j<=c->Ny();++j)
