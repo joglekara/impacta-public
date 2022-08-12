@@ -6,3 +6,6 @@ The code was based on ```impact```, conceived and developed by Robert Kingham an
 A new C++ version of the code with the addition of second order Cartesian Tensor terms was developed by Alec Thomas.
 Hydrodynamic ion motion were added by Alec Thomas based on a model developed for ```impact``` by Chris Ridgers.
 A ray tracing package was added by Archis Joglekar
+
+## Installation instructions:
+The code requires PETSc
