@@ -425,7 +425,7 @@ void Gather_kstring(IMPACT_ParVec *P,IMPACT_Config *c,IMPACT_MPI_Config *MPIc,in
 	  for (int ii=0;ii<klength;++ii)
 	    data[ii]=P->Get(ii+startofkstring);
 	   //MPI::COMM_WORLD.Send(&data[0],klength,MPI::DOUBLE,0,700+*i*100000+*j);
-    MPI_Send(&data[0],klength,MPI_DOUBLE,0,700+*i*100000+*j,MPI_COMM_WORLD);
+    MPI_Send(&data[0],klength,MPI_DOUBLE,0,(700+*i*100000+*j) % 32768,MPI_COMM_WORLD);
 
 	}
       if (!MPIc->rank())
@@ -437,7 +437,7 @@ void Gather_kstring(IMPACT_ParVec *P,IMPACT_Config *c,IMPACT_MPI_Config *MPIc,in
   else if (!MPIc->rank())
     {
       //MPI::COMM_WORLD.Recv(&data[0],klength,MPI::DOUBLE,MPI::ANY_SOURCE,700+*i*100000+*j);
-      MPI_Recv(&data[0],klength,MPI_DOUBLE,MPI_ANY_SOURCE,700+*i*100000+*j,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+      MPI_Recv(&data[0],klength,MPI_DOUBLE,MPI_ANY_SOURCE,(700+*i*100000+*j) % 32768,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
     }  
   MPI_Barrier(MPI_COMM_WORLD);
 }

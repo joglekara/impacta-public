@@ -46,6 +46,7 @@ This is now implemented.
 */
 static char help[] = "Matrix solver which takes IMPACT_Sparse and IMPACT_Vector forms and converts them to Petsc objects before solving the matrix equation";
 
+
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         Input arguments for matrix solve:
     argc - number of commandline flags
@@ -145,9 +146,12 @@ startofmatrixsolve:
    */
     ierr = PetscTime(&time1);
     CHKERRQ(ierr); // get time
-
+    PetscScalar my_zero = 0.0;
     for (int rowcount = Istart; rowcount <= Iend; ++rowcount)
     {
+        // AGRT 2022 - first set diagonal entry to zero explicitly:
+        ierr = MatSetValues(PETSC_S, 1, &rowcount, 1, &rowcount,
+                                &my_zero, INSERT_VALUES);
         IfZeroRow = 0.0;
         for (int subrowcount = IMPACT_S->getrow(rowcount + 1);
              subrowcount < IMPACT_S->getrow(rowcount + 2); ++subrowcount)
@@ -225,7 +229,8 @@ startofmatrixsolve:
     Imess1 << "\nRank " << rank << ": Vector transfer IMPACT->PETSC took - " << IMPACT_GetTime(time2 - time1);
     if (!rank)
         Imess1 << '\n';
-    std::cout << Imess1.str();
+    if (if_time_messages) 
+        std::cout << Imess1.str();
     MPI_Barrier(MPI_COMM_WORLD);
 
     /*  _-----------------------------------------------------------------
@@ -375,7 +380,8 @@ startofmatrixsolve:
     std::ostringstream Imess2;
     Imess2 << "\nPETSC: Processor " << rank << " of " << size << " - KSP solver setup took - " << time2 - time1 << " s";
     // if(!rank) Imess2<<'\n';
-    std::cout << Imess2.str();
+    if (if_time_messages)
+        std::cout << Imess2.str();
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Step 7 -  Solve the linear system
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */

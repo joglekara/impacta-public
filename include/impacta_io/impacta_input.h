@@ -1145,7 +1145,7 @@ IMPACT_Config IMPACT_Input(int *argnum, char **argstr)
             {
                 IMPACT_Input_Deck::Var_check[currentvar] = 1;
                 inumtemp >> truth;
-                std::cout << "ionization = " << truth << '\n';
+                //std::cout << "ionization = " << truth << '\n';
 
                 truth = StringToUpper(truth); // make uppercase
                 if (!strcmp(truth.c_str(), "NONE"))

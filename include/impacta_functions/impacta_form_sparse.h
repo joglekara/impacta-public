@@ -437,18 +437,22 @@ inline void IMPACT_Form_Sparse(IMPACT_Config *config1, IMPACT_MPI_Config *MPIc, 
     delete vtemp;
     timeend_outer = clock();
     // MESSAGES
-    if (numprocs == 1)
-    {
-        std::cout << std::endl
-                  << "IMPACT: Matrix Build - Inner Loop took " << IMPACT_GetTime(double(timeend_inner - timestart_inner) / CLOCKS_PER_SEC) << std::endl;
-        std::cout << "                       Outer Loop took " << IMPACT_GetTime(double(timeend_outer - timestart_outer) / CLOCKS_PER_SEC) << std::endl;
-        std::cout << ULINE;
-    }
     std::ostringstream Imessage2;
-    Imessage2 << BYELLOW << "\nIMPACT: Processor " << rank << " of " << numprocs << " Matrix Build - Total time = " << IMPACT_GetTime(double(timeend_outer - timestart_inner) / CLOCKS_PER_SEC) << ENDFORMAT;
-    if (!rank)
-        Imessage2 << '\n'
-                  << ULINE;
+    if (if_time_messages)
+    {
+        if (numprocs == 1)
+        {
+            std::cout << std::endl
+                      << "IMPACT: Matrix Build - Inner Loop took " << IMPACT_GetTime(double(timeend_inner - timestart_inner) / CLOCKS_PER_SEC) << std::endl;
+            std::cout << "                       Outer Loop took " << IMPACT_GetTime(double(timeend_outer - timestart_outer) / CLOCKS_PER_SEC) << std::endl;
+            std::cout << ULINE;
+        }
+        
+        Imessage2 << BYELLOW << "\nIMPACT: Processor " << rank << " of " << numprocs << " Matrix Build - Total time = " << IMPACT_GetTime(double(timeend_outer - timestart_inner) / CLOCKS_PER_SEC) << ENDFORMAT;
+        if (!rank)
+            Imessage2 << '\n'
+                      << ULINE;
+    }
     if (equation_switches::Cee0_on && !rank)
     {
         Imessage2 << "\n(Average Chang-Cooper delta iterations = " << IMPACT_Diagnostics::total_delta_its / IMPACT_Diagnostics::delta_times << ")\n";

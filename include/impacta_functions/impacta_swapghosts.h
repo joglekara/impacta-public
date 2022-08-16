@@ -23,6 +23,9 @@ so I'll have to pass it cell by cell.
 5/2010 - Changed send and receive to sendrev call - why didn't I do that before!?
 **********************************************************
 */
+
+
+
 inline int SwapGhosts(IMPACT_Config *c,IMPACT_MPI_Config *M, IMPACT_ParVec *v)
 {
   MPI_Barrier(MPI_COMM_WORLD);
@@ -104,7 +107,8 @@ inline int SwapGhosts(IMPACT_Config *c,IMPACT_MPI_Config *M, IMPACT_ParVec *v)
       // MESSAGES
       std::ostringstream Imess;
       Imess<<"\nIMPACT: Processor "<<rank<<" of "<<last_proc+1<<" - Transfer of ghosts took "<<IMPACT_GetTime(timeend-timestart)<<" s";
-      std::cout<<Imess.str();
+      if (if_time_messages)
+        std::cout<<Imess.str();
 	delete[] datalower;
 	delete[] dataupper; 
    }

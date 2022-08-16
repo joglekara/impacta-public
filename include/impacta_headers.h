@@ -93,6 +93,8 @@ i was using it rather loosely before.
 using namespace globalconsts;
 bool IMPACTA_Version_HPC=true;
 
+const bool if_time_messages = false;
+
 //objects
 #include "impacta_objects/impacta_dims.h"
 //using namespace with_vec_err_checking;
