@@ -55,6 +55,8 @@ updated when f2 and f3 added.
 **********************************************************
 21/3/07
 
+2022 - moved to GitHub so changes documented there.
+
 mpi message codes - 
 
 200 - gathering the whole vector for proc 0

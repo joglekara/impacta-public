@@ -36,9 +36,22 @@ void f0equation_inner(IMPACT_Config *c, IMPACT_ParVec *vlagged, IMPACT_ParVec *v
 
     // ai/v^2 dv^2f1i/fv
     double oneover3v2 = -1.0 * oneover3 / c->v2(k); // 1/v squared
-    for (IMPACT_Dim x1 = 1; x1 <= c->NE(); ++x1)
-        E->inc(vtemp, oneover3v2 * f1->ddv_v2(vlagged, c, i, j, k, &x1) * equation_switches::inf0_Edf1dv_on, i, j, &x1); // E element
-
+    if (!if_use_hybrid_nonlinear)
+    {
+        for (IMPACT_Dim x1 = 1; x1 <= c->NE(); ++x1)
+            E->inc(vtemp, oneover3v2 * f1->ddv_v2(vlagged, c, i, j, k, &x1) * equation_switches::inf0_Edf1dv_on, i, j, &x1); // E element
+    }
+    else
+    {
+        IMPACT_Vel_Sten ddv_v2;
+        for (IMPACT_Dim x1 = 1; x1 <= c->NE(); ++x1)
+        {
+            E->inc(vtemp, 0.5 * oneover3v2 * f1->ddv_v2(vlagged, c, i, j, k, &x1) * equation_switches::inf0_Edf1dv_on, i, j, &x1); // E element
+            ddv_v2 = O->ddv_v2(c,k);
+            ddv_v2 *(0.5 * oneover3v2 * E->get(vlagged, i, j, &x1) * equation_switches::inf0_Edf1dv_on);
+            f1->insert(&ddv_v2, vtemp, i, j, k, &x1);
+        }
+    }
     // e-e collision term Cee0
     int kminus = *k - 1;
     double Cee0_const = -1.0 / c->v2(k) * c->idv(k);
@@ -49,9 +62,6 @@ void f0equation_inner(IMPACT_Config *c, IMPACT_ParVec *vlagged, IMPACT_ParVec *v
     Fk *Cee0_const;
     f0->insert(&Fk, vtemp, i, j, k);
 
-    //bool uw;
-    //int dir;
-
     if (IMPACTA_ions::ion_motion)
     {
         // ION Motion terms...
@@ -61,12 +71,6 @@ void f0equation_inner(IMPACT_Config *c, IMPACT_ParVec *vlagged, IMPACT_ParVec *v
             temp_sten = (*O->ddxi(i, j, &x1)) *
                         Initial_Conditions::C_i[x1.get() - 1].get(i, j);
 
-            // Upwind
-            /*
-                dir = x1.get()-1;
-                uw = Initial_Conditions::C_i[dir].sign(i,j);
-                temp_sten = (*O->ddxi_uw(i,j,&x1,uw))*
-                Initial_Conditions::C_i[x1.get()-1].get(i,j);*/
             f0->insert(&temp_sten, vtemp, i, j, k);
         }
 
@@ -78,12 +82,6 @@ void f0equation_inner(IMPACT_Config *c, IMPACT_ParVec *vlagged, IMPACT_ParVec *v
         f0->inc(vtemp, vover3deltav * Initial_Conditions::DivC_i.get(i, j), i, j, &kplus);
         f0->inc(vtemp, -vover3deltav * Initial_Conditions::DivC_i.get(i, j), i, j, &kminus);
     }
-
-    // Diffusion
-    // double Dtimesdt = -1.0e-3;
-    // temp_sten = (O->Laplacian(i,j)*Dtimesdt);
-
-    // f0->insert(&temp_sten,vtemp,i,j,k);
 }
 
 // code for outer cells of f0 equation - i.e.  boundaries
@@ -110,8 +108,23 @@ void f0equation_outer(IMPACT_Config *c, IMPACT_ParVec *vlagged, IMPACT_ParVec *v
 
     // ai/v^2 dv^2f1i/fv
     double oneover3v2 = -1.0 * oneover3 / c->v2(k); // 1/v squared
-    for (IMPACT_Dim x1 = 1; x1 <= c->NE(); ++x1)
-        E->inc(vtemp, oneover3v2 * f1->ddv_v2_BC(vlagged, c, i, j, k, &x1) * equation_switches::inf0_Edf1dv_on, i, j, &x1);
+
+    if (!if_use_hybrid_nonlinear)
+    {
+        for (IMPACT_Dim x1 = 1; x1 <= c->NE(); ++x1)
+            E->inc(vtemp, oneover3v2 * f1->ddv_v2_BC(vlagged, c, i, j, k, &x1) * equation_switches::inf0_Edf1dv_on, i, j, &x1);
+    }
+    else
+    {
+        IMPACT_Vel_Sten ddv_v2;
+        for (IMPACT_Dim x1 = 1; x1 <= c->NE(); ++x1)
+        {
+            E->inc(vtemp, 0.5 * oneover3v2 * f1->ddv_v2_BC(vlagged, c, i, j, k, &x1) * equation_switches::inf0_Edf1dv_on, i, j, &x1); // E element
+            ddv_v2 = O->ddv_v2(c,k);
+            ddv_v2 * (0.5 * oneover3v2 * E->get(vlagged, i, j, &x1) * equation_switches::inf0_Edf1dv_on);
+            f1->insert_BC(&ddv_v2, vtemp, i, j, k, &x1);
+        }
+    }
 
     // e-e collision term Cee0
     int kminus = *k - 1;
@@ -135,11 +148,6 @@ void f0equation_outer(IMPACT_Config *c, IMPACT_ParVec *vlagged, IMPACT_ParVec *v
             temp_sten = (*O->ddxi(i, j, &x1)) *
                         Initial_Conditions::C_i[x1.get() - 1].get(i, j);
 
-            // Upwind
-            /*dir = x1.get()-1;
-                uw = Initial_Conditions::C_i[dir].sign(i,j);
-                temp_sten = (*O->ddxi_uw(i,j,&x1,uw))*
-                Initial_Conditions::C_i[dir].get(i,j);*/
             f0->insert_BC(&temp_sten, vtemp, i, j, k);
         }
 
@@ -155,10 +163,4 @@ void f0equation_outer(IMPACT_Config *c, IMPACT_ParVec *vlagged, IMPACT_ParVec *v
         f0->inc(vtemp, -vover3deltav * Initial_Conditions::DivC_i.get(i, j), i, j, &kminus);
         f0->inc(vtemp, vover3deltav * Initial_Conditions::DivC_i.get(i, j), i, j, &kplus);
     }
-
-    // Diffusion
-    // double Dtimesdt = -1.0e-3;
-    // temp_sten = (O->Laplacian(i,j)*Dtimesdt);
-
-    // f0->insert_BC(&temp_sten,vtemp,i,j,k);
 }

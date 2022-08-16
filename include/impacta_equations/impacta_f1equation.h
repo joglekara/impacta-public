@@ -9,10 +9,12 @@ AGRT
 27/2 - Need to put in Bxf1 term!!! done.
 
 15/04/07 - Changed div for grad
+AGRT 2022 - now on github, updates there.
 
 **********************************************************
 
 */
+
 // code for inner cells of f0 equation - i.e. not at boundaries
 inline void f1equation_inner(IMPACT_Config *c, IMPACT_ParVec *vlagged, IMPACT_ParVec *vtemp, IMPACT_StenOps *O, IMPACT_Var *f0, IMPACT_Var *E, IMPACT_Var *B, IMPACT_Var *f1, IMPACT_Var *f2, int *i, int *j, int *k, IMPACT_Dim *x1)
 {
@@ -39,9 +41,21 @@ inline void f1equation_inner(IMPACT_Config *c, IMPACT_ParVec *vlagged, IMPACT_Pa
     }
 
     //-Edf0/dv
-    if (c->NE() > 0)
-        E->set(vtemp, -equation_switches::inf1_Edf0dv_on * f0->ddv(vlagged, c, i, j, k), i, j, x1);
-
+    if (!if_use_hybrid_nonlinear)
+    {
+        if (c->NE() > 0)
+            E->set(vtemp, -equation_switches::inf1_Edf0dv_on * f0->ddv(vlagged, c, i, j, k), i, j, x1);
+    }
+    else
+    {
+        if (c->NE() > 0)
+        {
+            E->set(vtemp, -0.5 * equation_switches::inf1_Edf0dv_on * f0->ddv(vlagged, c, i, j, k), i, j, x1);
+            IMPACT_Vel_Sten ddv = O->ddv(c, k);
+            ddv *(-0.5 * equation_switches::inf1_Edf0dv_on *E->get(vlagged, i, j, x1));
+            f0->insert(&ddv, vtemp, i, j, k);
+        }
+    }
     // double erfv=erf(v);
     // double expmv2oversqrtpi = exp(-1.0*c->v2(k))/sqrt(globalconsts::pi);
 
@@ -65,16 +79,30 @@ inline void f1equation_inner(IMPACT_Config *c, IMPACT_ParVec *vlagged, IMPACT_Pa
 
     IMPACT_Dim x2, x3;
     GetOrthogonal(x1, &x2, &x3);
-    if (x2 > 3 - c->NB() && x3 <= c->Nf1())
-        f1->inc(vtemp, B->get(vlagged, i, j, &x2) * multiplier * Bimp, i, j, k, &x3);
-    if (x3 > 3 - c->NB() && x2 <= c->Nf1())
-        f1->inc(vtemp, -(B->get(vlagged, i, j, &x3) * multiplier * Bimp), i, j, k, &x2);
+    if (!if_use_hybrid_nonlinear)
+    {
+        if (x2 > 3 - c->NB() && x3 <= c->Nf1())
+            f1->inc(vtemp, B->get(vlagged, i, j, &x2) * multiplier * Bimp, i, j, k, &x3);
+        if (x3 > 3 - c->NB() && x2 <= c->Nf1())
+            f1->inc(vtemp, -(B->get(vlagged, i, j, &x3) * multiplier * Bimp), i, j, k, &x2);
 
-    if (x2 > 3 - c->NB() && x3 <= c->Nf1())
-        B->inc(vtemp, f1->get(vlagged, i, j, k, &x3) * multiplier * (1 - Bimp), i, j, &x2);
-    if (x3 > 3 - c->NB() && x2 <= c->Nf1())
-        B->inc(vtemp, -f1->get(vlagged, i, j, k, &x2) * multiplier * (1 - Bimp), i, j, &x3);
+        if (x2 > 3 - c->NB() && x3 <= c->Nf1())
+            B->inc(vtemp, f1->get(vlagged, i, j, k, &x3) * multiplier * (1 - Bimp), i, j, &x2);
+        if (x3 > 3 - c->NB() && x2 <= c->Nf1())
+            B->inc(vtemp, -f1->get(vlagged, i, j, k, &x2) * multiplier * (1 - Bimp), i, j, &x3);
+    }
+    else
+    {
+        if (x2 > 3 - c->NB() && x3 <= c->Nf1())
+            f1->inc(vtemp, B->get(vlagged, i, j, &x2) * multiplier * 0.5, i, j, k, &x3);
+        if (x3 > 3 - c->NB() && x2 <= c->Nf1())
+            f1->inc(vtemp, -(B->get(vlagged, i, j, &x3) * multiplier * 0.5), i, j, k, &x2);
 
+        if (x2 > 3 - c->NB() && x3 <= c->Nf1())
+            B->inc(vtemp, f1->get(vlagged, i, j, k, &x3) * multiplier * 0.5, i, j, &x2);
+        if (x3 > 3 - c->NB() && x2 <= c->Nf1())
+            B->inc(vtemp, -f1->get(vlagged, i, j, k, &x2) * multiplier * 0.5, i, j, &x3);
+    }
     // f2 parts
     // a_j d/dvv^3f2_ij
     multiplier = -0.4 / c->v3(k);
@@ -150,9 +178,21 @@ inline void f1equation_outer(IMPACT_Config *c, IMPACT_ParVec *vlagged, IMPACT_Pa
     }
 
     //-Edf0/dv
-    if (c->NE() > 0)
-        E->set(vtemp, -equation_switches::inf1_Edf0dv_on * f0->ddv_BC(vlagged, c, i, j, k), i, j, x1);
-
+    if (!if_use_hybrid_nonlinear)
+    {
+        if (c->NE() > 0)
+            E->set(vtemp, -equation_switches::inf1_Edf0dv_on * f0->ddv(vlagged, c, i, j, k), i, j, x1);
+    }
+    else
+    {
+        if (c->NE() > 0)
+        {
+            E->set(vtemp, -0.5 * equation_switches::inf1_Edf0dv_on * f0->ddv(vlagged, c, i, j, k), i, j, x1);
+            IMPACT_Vel_Sten ddv = O->ddv(c, k);
+            ddv *(-0.5 * equation_switches::inf1_Edf0dv_on *E->get(vlagged, i, j, x1));
+            f0->insert_BC(&ddv, vtemp, i, j, k);
+        }
+    }
     // double erfv=erf(v);
     // double expmv2oversqrtpi = exp(-1.0*c->v2(k))/sqrt(globalconsts::pi);
 
@@ -174,15 +214,30 @@ inline void f1equation_outer(IMPACT_Config *c, IMPACT_ParVec *vlagged, IMPACT_Pa
 
     IMPACT_Dim x2, x3;
     GetOrthogonal(x1, &x2, &x3);
-    if (x2 > 3 - c->NB() && x3 <= c->Nf1())
-        f1->inc(vtemp, B->get(vlagged, i, j, &x2) * multiplier * Bimp, i, j, k, &x3);
-    if (x3 > 3 - c->NB() && x2 <= c->Nf1())
-        f1->inc(vtemp, -(B->get(vlagged, i, j, &x3) * multiplier * Bimp), i, j, k, &x2);
+    if (!if_use_hybrid_nonlinear)
+    {
+        if (x2 > 3 - c->NB() && x3 <= c->Nf1())
+            f1->inc(vtemp, B->get(vlagged, i, j, &x2) * multiplier * Bimp, i, j, k, &x3);
+        if (x3 > 3 - c->NB() && x2 <= c->Nf1())
+            f1->inc(vtemp, -(B->get(vlagged, i, j, &x3) * multiplier * Bimp), i, j, k, &x2);
 
-    if (x2 > 3 - c->NB() && x3 <= c->Nf1())
-        B->inc(vtemp, f1->get(vlagged, i, j, k, &x3) * multiplier * (1 - Bimp), i, j, &x2);
-    if (x3 > 3 - c->NB() && x2 <= c->Nf1())
-        B->inc(vtemp, -f1->get(vlagged, i, j, k, &x2) * multiplier * (1 - Bimp), i, j, &x3);
+        if (x2 > 3 - c->NB() && x3 <= c->Nf1())
+            B->inc(vtemp, f1->get(vlagged, i, j, k, &x3) * multiplier * (1 - Bimp), i, j, &x2);
+        if (x3 > 3 - c->NB() && x2 <= c->Nf1())
+            B->inc(vtemp, -f1->get(vlagged, i, j, k, &x2) * multiplier * (1 - Bimp), i, j, &x3);
+    }
+    else
+    {
+        if (x2 > 3 - c->NB() && x3 <= c->Nf1())
+            f1->inc(vtemp, B->get(vlagged, i, j, &x2) * multiplier * 0.5, i, j, k, &x3);
+        if (x3 > 3 - c->NB() && x2 <= c->Nf1())
+            f1->inc(vtemp, -(B->get(vlagged, i, j, &x3) * multiplier * 0.5), i, j, k, &x2);
+
+        if (x2 > 3 - c->NB() && x3 <= c->Nf1())
+            B->inc(vtemp, f1->get(vlagged, i, j, k, &x3) * multiplier * 0.5, i, j, &x2);
+        if (x3 > 3 - c->NB() && x2 <= c->Nf1())
+            B->inc(vtemp, -f1->get(vlagged, i, j, k, &x2) * multiplier * 0.5, i, j, &x3);
+    } 
 
     // f2 parts
     // a_j d/dvv^3f2_ij

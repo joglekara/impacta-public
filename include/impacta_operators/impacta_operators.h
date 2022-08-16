@@ -246,8 +246,10 @@ inline void IMPACT_Var::insert(IMPACT_vint *vint, IMPACT_ParVec *v, int *i, int 
     } 
 }
 //******************************************************************
-// Velocity stencil operations - only for f0 at present
+// Velocity stencil operations
 //******************************************************************
+
+// for f0
 inline void IMPACT_Var::insert(IMPACT_Vel_Sten *vs, IMPACT_ParVec *v, int *i, int *j, int *k)
 {
   int kminus=*k-1,kplus=*k+1;
@@ -264,6 +266,51 @@ inline void IMPACT_Var::insert_BC(IMPACT_Vel_Sten *vs, IMPACT_ParVec *v, int *i,
   inc(v,vs->get(1),i,j,k);
   inc(v,vs->get(2),i,j,&kplus);
 }
+
+
+// for f1
+inline void IMPACT_Var::insert(IMPACT_Vel_Sten *vs, IMPACT_ParVec *v, int *i, int *j, int *k, IMPACT_Dim *x1)
+{
+  int kminus=*k-1,kplus=*k+1;
+  inc(v,vs->get(0),i,j,&kminus,x1);
+  inc(v,vs->get(1),i,j,k,x1);
+  inc(v,vs->get(2),i,j,&kplus,x1);
+}
+inline void IMPACT_Var::insert_BC(IMPACT_Vel_Sten *vs, IMPACT_ParVec *v, int *i, int *j, int *k, IMPACT_Dim *x1)
+{
+  int kminus=*k-1,kplus=*k+1;
+  if (kminus<1) ++kminus;
+  if (kplus>Nv) --kplus;
+  inc(v,vs->get(0),i,j,&kminus,x1);
+  inc(v,vs->get(1),i,j,k,x1);
+  inc(v,vs->get(2),i,j,&kplus,x1);
+}
+
+// for f2
+inline void IMPACT_Var::insert(IMPACT_Vel_Sten *vs, IMPACT_ParVec *v, int *i, int *j, int *k, IMPACT_Dim *x1, IMPACT_Dim *x2)
+{
+  int kminus=*k-1,kplus=*k+1;
+  inc(v,vs->get(0),i,j,&kminus,x1,x2);
+  inc(v,vs->get(1),i,j,k,x1,x2);
+  inc(v,vs->get(2),i,j,&kplus,x1,x2);
+}
+inline void IMPACT_Var::insert_BC(IMPACT_Vel_Sten *vs, IMPACT_ParVec *v, int *i, int *j, int *k, IMPACT_Dim *x1, IMPACT_Dim *x2)
+{
+  int kminus=*k-1,kplus=*k+1;
+  if (kminus<1) ++kminus;
+  if (kplus>Nv) --kplus;
+  inc(v,vs->get(0),i,j,&kminus,x1,x2);
+  inc(v,vs->get(1),i,j,k,x1,x2);
+  inc(v,vs->get(2),i,j,&kplus,x1,x2);
+}
+
+
+
+
+
+
+
+
 //This is for the non-stencil differentials wrt v
 //namespace Diff_df0dv_centred //center differenced df0/dv term
 
