@@ -63,7 +63,7 @@ void IMPACT_Switch_Elements(IMPACT_Config *c, IMPACT_MPI_Config *MPIc,
   int nadd=n;
   if (nadd<1) nadd=1;
 
-  MPI::COMM_WORLD.Barrier();
+  MPI_Barrier(MPI_COMM_WORLD);
 
   /*
     AGRT 25/1/2010

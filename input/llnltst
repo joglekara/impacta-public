@@ -24,9 +24,11 @@
 % ========================================================% 
 % Simulation Grid Parameters 
 %
-	Nx = 256
-	Ny = 2
-	Nv = 256
+	%Nx = 256
+	Nx = 64
+	Ny = 64
+	Nv = 64
+	%Nv = 256
 % coordinates can be xy, rt and rz (eventually) 
 	coordinates = xy
 %
@@ -231,7 +233,7 @@
 %% Ray tracing 
 tr_bool = false	     % Switch 
 beam_width = 3535  % Beam width in mfp 	
-beam_res = 100	     % # of rays/beam 
+beam_res = 1 %100	     % # of rays/beam 
 boundary = y		
 shape = g
 n_c = 0.915	    % Critical density

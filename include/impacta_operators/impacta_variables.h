@@ -328,7 +328,7 @@ if (objecttype==1||objecttype==4||objecttype==5)
     default:
       break;
     }
-  MPI::COMM_WORLD.Barrier();
+  MPI_Barrier(MPI_COMM_WORLD);
   // Now multiply values
   for (int i=istart;i<=iend;++i) 
     for (int j=1;j<=c->Ny();++j)
@@ -991,6 +991,11 @@ inline void insert_BC(IMPACT_stencil *stencil, IMPACT_ParVec *v, int *i, int *j,
   //and for velocity differential
   inline void insert(IMPACT_Vel_Sten *vs, IMPACT_ParVec *v, int *i, int *j, int *k);
   inline void insert_BC(IMPACT_Vel_Sten *vs, IMPACT_ParVec *v, int *i, int *j, int *k);
+   inline void insert(IMPACT_Vel_Sten *vs, IMPACT_ParVec *v, int *i, int *j, int *k, IMPACT_Dim *x1);
+  inline void insert_BC(IMPACT_Vel_Sten *vs, IMPACT_ParVec *v, int *i, int *j, int *k, IMPACT_Dim *x1);
+   inline void insert(IMPACT_Vel_Sten *vs, IMPACT_ParVec *v, int *i, int *j, int *k, IMPACT_Dim *x1, IMPACT_Dim *x2);
+  inline void insert_BC(IMPACT_Vel_Sten *vs, IMPACT_ParVec *v, int *i, int *j, int *k, IMPACT_Dim *x1, IMPACT_Dim *x2);
+  
   //differential operators wrt v
   inline double ddv(IMPACT_ParVec * v, IMPACT_Config *config1, int *i, int *j, int *k);
   inline double ddv_BC(IMPACT_ParVec * v, IMPACT_Config *config1, int *i, int *j, int *k);

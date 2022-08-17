@@ -15,7 +15,7 @@ COMPILER = mpicxx
 
 # INTEL compilers
 OPTFLAGS = -O3
-DBGFLAGS = -g -O0 -Wall
+DBGFLAGS = -g -O0 -Wall -pedantic
 
 SOURCES = impacta_main.cpp 
 
@@ -49,21 +49,21 @@ exec:
 cleanerror : 
 	rm *.o*
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 
 ${BUILDEXEC} : ${BUILDOBJECTS}
 	-${COMPILER} ${OPTFLAGS} -o ${BUILDEXEC} ${PETSC_CC_INCLUDES} \
-	${BUILDOBJECTS} ${PETSC_KSP_LIB} -I/home/software/rhel6/boost/1.54.0-intel/include
+	${BUILDOBJECTS} ${PETSC_KSP_LIB} -L${BOOST_LIB} -I${BOOST_INCLUDE}
 
 debug :
 	${COMPILER} ${DBGFLAGS} -o ${BUILDEXEC} \
-	${BUILDSOURCES} ${PETSC_CC_INCLUDES} ${PETSC_KSP_LIB} -I/home/software/rhel6/boost/1.54.0-intel/include
+	${BUILDSOURCES} ${PETSC_CC_INCLUDES} ${PETSC_KSP_LIB} -L${BOOST_LIB} -I${BOOST_INCLUDE}
 
 
 ${BUILDOBJECTS} : ${BUILDSOURCES}
 	cd ${OBJDIR}
 	-${COMPILER} ${OPTFLAGS} ${PETSC_CC_INCLUDES} -c ${BUILDSOURCES}$ \
-	 ${PETSC_KSP_LIB} -I/home/software/rhel6/boost/1.54.0-intel/include
+		${PETSC_KSP_LIB} -L${BOOST_LIB} -I${BOOST_INCLUDE}
 

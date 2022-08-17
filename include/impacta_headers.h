@@ -55,6 +55,8 @@ updated when f2 and f3 added.
 **********************************************************
 21/3/07
 
+2022 - moved to GitHub so changes documented there.
+
 mpi message codes - 
 
 200 - gathering the whole vector for proc 0
@@ -92,6 +94,8 @@ i was using it rather loosely before.
 
 using namespace globalconsts;
 bool IMPACTA_Version_HPC=true;
+
+const bool if_time_messages = false;
 
 //objects
 #include "impacta_objects/impacta_dims.h"

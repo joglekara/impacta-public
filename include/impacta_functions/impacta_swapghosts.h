@@ -23,9 +23,12 @@ so I'll have to pass it cell by cell.
 5/2010 - Changed send and receive to sendrev call - why didn't I do that before!?
 **********************************************************
 */
+
+
+
 inline int SwapGhosts(IMPACT_Config *c,IMPACT_MPI_Config *M, IMPACT_ParVec *v)
 {
-  MPI::COMM_WORLD.Barrier();
+  MPI_Barrier(MPI_COMM_WORLD);
   if (M->size()>1)
     {
       
@@ -60,14 +63,14 @@ inline int SwapGhosts(IMPACT_Config *c,IMPACT_MPI_Config *M, IMPACT_ParVec *v)
 	datalower[i]=v->Get(i+istart);
 	dataupper[i]=0.0;
 	}
-      MPI::COMM_WORLD.Barrier();
+      MPI_Barrier(MPI_COMM_WORLD);
       
-      MPI::COMM_WORLD.Sendrecv(&datalower[0],Npoints_per_i,MPI::DOUBLE,
+      MPI_Sendrecv(&datalower[0],Npoints_per_i,MPI_DOUBLE,
 			       mylowerfriend,300+rank,
-			       &dataupper[0],Npoints_per_i,MPI::DOUBLE,
-			       myupperfriend,300+myupperfriend);
+			       &dataupper[0],Npoints_per_i,MPI_DOUBLE,
+			       myupperfriend,300+myupperfriend,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
       
-      MPI::COMM_WORLD.Barrier();
+      MPI_Barrier(MPI_COMM_WORLD);
       
       //now we put this data into our upper ghost cells....
       //  these start at iend+1
@@ -82,25 +85,30 @@ inline int SwapGhosts(IMPACT_Config *c,IMPACT_MPI_Config *M, IMPACT_ParVec *v)
 	  dataupper[i]=v->Get(i+iend-Npoints_per_i+1); 
 	  datalower[i]=0.0;
 	}
-      MPI::COMM_WORLD.Barrier();
+      MPI_Barrier(MPI_COMM_WORLD);
       
-      MPI::COMM_WORLD.Sendrecv(&dataupper[0],Npoints_per_i,MPI::DOUBLE,
+      //MPI::COMM_WORLD.Sendrecv(&dataupper[0],Npoints_per_i,MPI::DOUBLE,
+			//       myupperfriend,400+rank,
+			//       &datalower[0],Npoints_per_i,MPI::DOUBLE,
+			//       mylowerfriend,400+mylowerfriend);
+      MPI_Sendrecv(&dataupper[0],Npoints_per_i,MPI_DOUBLE,
 			       myupperfriend,400+rank,
-			       &datalower[0],Npoints_per_i,MPI::DOUBLE,
-			       mylowerfriend,400+mylowerfriend);
-      
-      MPI::COMM_WORLD.Barrier();
+			       &datalower[0],Npoints_per_i,MPI_DOUBLE,
+			       mylowerfriend,400+mylowerfriend,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+
+      MPI_Barrier(MPI_COMM_WORLD);
 
       //now we put this data into our lower ghost cells....
       for (int i=0;i<Npoints_per_i;++i)
 	v->Set(i+M->start_WG(),datalower[i]);
       //_______________________________________________________________________
       timeend=clock();
-      MPI::COMM_WORLD.Barrier();
+      MPI_Barrier(MPI_COMM_WORLD);
       // MESSAGES
       std::ostringstream Imess;
       Imess<<"\nIMPACT: Processor "<<rank<<" of "<<last_proc+1<<" - Transfer of ghosts took "<<IMPACT_GetTime(timeend-timestart)<<" s";
-      std::cout<<Imess.str();
+      if (if_time_messages)
+        std::cout<<Imess.str();
 	delete[] datalower;
 	delete[] dataupper; 
    }
@@ -115,6 +123,6 @@ inline int SwapGhosts(IMPACT_Config *c,IMPACT_MPI_Config *M, IMPACT_ParVec *v)
 	v->Set(i+M->start_WG()-1,v->Get(i+iend-Npoints_per_i));
    
     }
-  MPI::COMM_WORLD.Barrier();
+  MPI_Barrier(MPI_COMM_WORLD);
   return 0;
 }

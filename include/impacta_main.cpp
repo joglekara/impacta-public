@@ -30,7 +30,7 @@ int main(int argnum, char **argstr_in)
   IMPACT_Diagnostics::init_start_time=clock();
   IMPACT_Help(argnum, argstr_in); // help for command line flags
  
-  MPI::Init(argnum, argstr_in); // initialize MPI
+  MPI_Init(&argnum, &argstr_in); // initialize MPI
 
 /*
     Here, we sort out command line input so that more can be added
@@ -138,7 +138,7 @@ int main(int argnum, char **argstr_in)
 	    {
 	      Initial_Conditions::ni.set(i,j,Local_ne(allvar,&f0,&config1,&i,&j)/Initial_Conditions::Z.get(&i,&j));
 	    }
-	MPI::COMM_WORLD.Barrier();
+	MPI_Barrier(MPI_COMM_WORLD);
 	IMPACTA_Share_Moment(&config1,&MPIconf, &Initial_Conditions::ni);
 	Initialize(allvar,&config1,&MPIconf,&f0,&f1,&f2,&f3,&E,&B);
       }
@@ -183,7 +183,7 @@ int main(int argnum, char **argstr_in)
  // Dump t=0
 //  if (!equation_switches::relaxtoeq)
  //   IMPACT_Dump(&config1,&MPIconf,allvar,&f0,&f1,&f2,&f3,&E,&B,0);
-  MPI::COMM_WORLD.Barrier();
+  MPI_Barrier(MPI_COMM_WORLD);
 
   int f0equationtemp=equation_switches::f0_equation_on;
   int f1equationtemp=equation_switches::f1_equation_on;
@@ -248,7 +248,7 @@ int main(int argnum, char **argstr_in)
   // Ready for main loop - first do 2 steps with very small dt
   // To bring in f1 then f2 on the second
   int Bequationtemp=equation_switches::B_equation_on;
-  MPI::COMM_WORLD.Barrier();
+  MPI_Barrier(MPI_COMM_WORLD);
   if (equation_switches::relaxtoeq>0)
    {
     //Initially a step with somefraction of dt is performed..
@@ -287,7 +287,7 @@ int main(int argnum, char **argstr_in)
 	
 	  }
    }
-  MPI::COMM_WORLD.Barrier();
+  MPI_Barrier(MPI_COMM_WORLD);
  // Finally reset switches for main loop
   config1.set_dt(dt);
   equation_switches::f0_equation_on=f0equationtemp;
@@ -322,7 +322,7 @@ int main(int argnum, char **argstr_in)
 
   for (n=1;n<=config1.n_max();++n)
     {      
-      MPI::COMM_WORLD.Barrier();
+      MPI_Barrier(MPI_COMM_WORLD);
       IMPACT_Main_Loop(&config1,&MPIconf,S,&stenops,&argnum,
 		       argstr,&f0,&f1,&f2,&f3,&E,&B,allvar,
 		       allvar_lagged,allvar_lagged_old,&n,dt);

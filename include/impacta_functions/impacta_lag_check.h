@@ -33,7 +33,7 @@ int IMPACT_Lag_Check(IMPACT_Config *c,IMPACT_MPI_Config* MPIc,IMPACT_ParVec *vec
   int whichproc=0;
   if (MPIc->size()>1)
     {
-      MPI::COMM_WORLD.Barrier();
+      MPI_Barrier(MPI_COMM_WORLD);
       int *all_results;
 	all_results=new int [MPIc->size()];
       MPI_Allgather ( &result, 1, MPI_INT,all_results, 1, MPI_INT,
@@ -43,7 +43,7 @@ int IMPACT_Lag_Check(IMPACT_Config *c,IMPACT_MPI_Config* MPIc,IMPACT_ParVec *vec
 	result += all_results[i];
       result/=MPIc->size(); //integer divide so it will be zero unless all are 1
       
-      MPI::COMM_WORLD.Barrier();
+      MPI_Barrier(MPI_COMM_WORLD);
       //now get all maxvalues
       double *all_maxvalues;
       all_maxvalues = new double [MPIc->size()];
@@ -64,7 +64,7 @@ int IMPACT_Lag_Check(IMPACT_Config *c,IMPACT_MPI_Config* MPIc,IMPACT_ParVec *vec
       std::cout<<Imessage.str();
       IMPACT_File_Message(c,n,lag,maxvalue);
     }
-  MPI::COMM_WORLD.Barrier();
+  MPI_Barrier(MPI_COMM_WORLD);
   // for fast convergence of the matrix
   double multiplier = floor(log10(fabs(maxvalue)*1e5));
   multiplier = pow(10,multiplier);

@@ -1,6 +1,6 @@
 /*
 **********************************************************
-Some Parallel stuff for Impact. Includes MPI_Config class,
+Some Parallel stuff for Impacta. Includes MPI_Config class,
  Parallel Vector class and Gather function
 
 Version 1.3
@@ -161,10 +161,10 @@ IMPACT_MPI_Config IMPACT_MPI_Setup(int * argnum, char** argstr,IMPACT_Config *c)
   int rank, size;
   int Numx=c->Nx();
   
-  size=MPI::COMM_WORLD.Get_size();
-  rank=MPI::COMM_WORLD.Get_rank();
-  //MPI_Comm_size( MPI_COMM_WORLD, &size );
-  //MPI_Comm_rank( MPI_COMM_WORLD, &rank );
+  //size=MPI::COMM_WORLD.Get_size();
+  //rank=MPI::COMM_WORLD.Get_rank();
+  MPI_Comm_size( MPI_COMM_WORLD, &size );
+  MPI_Comm_rank( MPI_COMM_WORLD, &rank );
   if (size>Numx)
     {
       std::cout<<"IMPACT: ERROR more processors than x gridpoints!"<<std::endl;
@@ -181,7 +181,7 @@ IMPACT_MPI_Config IMPACT_MPI_Setup(int * argnum, char** argstr,IMPACT_Config *c)
   //as well as assigning the above bounds.
   if (rank==0)
     {
-  std::cout <<std::endl<<BCYAN<<"IMPACT: Distributing i grid over "<<size<<" processor(s)"<<CYAN<<std::endl<<ULINE;
+  std::cout <<std::endl<<BCYAN<<"IMPACTA: Distributing i grid over "<<size<<" processor(s)"<<CYAN<<std::endl<<ULINE;
   std::cout<<"\tGrid Division\t\t|\tWith Ghosts"<<std::endl;
   std::cout <<"Rank\timin\timax\tNx\t|\timin\timax\tNx"<<std::endl<<ULINE<<ENDFORMAT;
     }
@@ -234,7 +234,7 @@ IMPACT_MPI_Config IMPACT_MPI_Setup(int * argnum, char** argstr,IMPACT_Config *c)
   //Check whether domain divide is self-consistent  
   if ((ranksumx-Numx)!=0&&rank==0)
     {
-      std::cout<<"IMPACT: ERROR - in IMPACT_MPI_Setup domain not correctly divided"<<std::endl<<std::endl;
+      std::cout<<"IMPACTA: ERROR - in IMPACT_MPI_Setup domain not correctly divided"<<std::endl<<std::endl;
       exit(0);
     }
   //
@@ -362,7 +362,7 @@ IMPACT_ParVec Gather(IMPACT_ParVec *P,IMPACT_Config *c,IMPACT_MPI_Config *MPIc)
    */
   IMPACT_ParVec answer(1,c->totalpoints());
   //NOw gather from all nodes:
-  MPI::COMM_WORLD.Barrier();
+  MPI_Barrier(MPI_COMM_WORLD);
   if (MPIc->rank()>0)
     {
       //needs delete!
@@ -370,10 +370,11 @@ IMPACT_ParVec Gather(IMPACT_ParVec *P,IMPACT_Config *c,IMPACT_MPI_Config *MPIc)
       data = new double[MPIc->N()];
       for (int i=0;i<MPIc->N();++i)
 	data[i]=P->Get(i+MPIc->start());
-      MPI::COMM_WORLD.Send(&data,MPIc->N(),MPI::DOUBLE,0,200+MPIc->rank());
+      //MPI::COMM_WORLD.Send(&data,MPIc->N(),MPI::DOUBLE,0,200+MPIc->rank());
+      MPI_Send(&data,MPIc->N(),MPI_DOUBLE,0,200+MPIc->rank(),MPI_COMM_WORLD);
       delete[] data;
      }
-  MPI::COMM_WORLD.Barrier();
+  MPI_Barrier(MPI_COMM_WORLD);
   if (!MPIc->rank())
     {
       double *datarec;
@@ -383,15 +384,16 @@ IMPACT_ParVec Gather(IMPACT_ParVec *P,IMPACT_Config *c,IMPACT_MPI_Config *MPIc)
       
       for (int ranktemp=1;ranktemp<MPIc->size();ranktemp++)
 	{
-	  MPI::COMM_WORLD.Recv(&datarec[MPIc->start(ranktemp)-1],MPIc->end(ranktemp)-MPIc->start(ranktemp)+1,MPI::DOUBLE,MPI::ANY_SOURCE,200+ranktemp);
+	  //MPI::COMM_WORLD.Recv(&datarec[MPIc->start(ranktemp)-1],MPIc->end(ranktemp)-MPIc->start(ranktemp)+1,MPI::DOUBLE,MPI::ANY_SOURCE,200+ranktemp);
+    MPI_Recv(&datarec[MPIc->start(ranktemp)-1],MPIc->end(ranktemp)-MPIc->start(ranktemp)+1,MPI_DOUBLE,MPI_ANY_SOURCE,200+ranktemp,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
 	}
       
       for (int i=0;i<c->totalpoints();++i)
 	answer.Set(i+1,datarec[i]);
       delete[] datarec;
     }
-  MPI::COMM_WORLD.Barrier();
-
+  //MPI_Barrier(MPI_COMM_WORLD);
+  MPI_Barrier(MPI_COMM_WORLD);
   return answer;
 }
 
@@ -411,7 +413,8 @@ void Gather_kstring(IMPACT_ParVec *P,IMPACT_Config *c,IMPACT_MPI_Config *MPIc,in
   int iend=MPIc->iend();
   
   //NOw gather from all nodes:
-  MPI::COMM_WORLD.Barrier();
+  //MPI_Barrier(MPI_COMM_WORLD);
+  MPI_Barrier(MPI_COMM_WORLD);
   
   if (*i>=istart&&*i<=iend)
     {
@@ -421,7 +424,9 @@ void Gather_kstring(IMPACT_ParVec *P,IMPACT_Config *c,IMPACT_MPI_Config *MPIc,in
 
 	  for (int ii=0;ii<klength;++ii)
 	    data[ii]=P->Get(ii+startofkstring);
-	   MPI::COMM_WORLD.Send(&data[0],klength,MPI::DOUBLE,0,700+*i*100000+*j);
+	   //MPI::COMM_WORLD.Send(&data[0],klength,MPI::DOUBLE,0,700+*i*100000+*j);
+    MPI_Send(&data[0],klength,MPI_DOUBLE,0,(700+*i*100000+*j) % 32768,MPI_COMM_WORLD);
+
 	}
       if (!MPIc->rank())
 	{
@@ -431,8 +436,8 @@ void Gather_kstring(IMPACT_ParVec *P,IMPACT_Config *c,IMPACT_MPI_Config *MPIc,in
     }
   else if (!MPIc->rank())
     {
-      
-      MPI::COMM_WORLD.Recv(&data[0],klength,MPI::DOUBLE,MPI::ANY_SOURCE,700+*i*100000+*j);
-      }  
-  MPI::COMM_WORLD.Barrier();
+      //MPI::COMM_WORLD.Recv(&data[0],klength,MPI::DOUBLE,MPI::ANY_SOURCE,700+*i*100000+*j);
+      MPI_Recv(&data[0],klength,MPI_DOUBLE,MPI_ANY_SOURCE,(700+*i*100000+*j) % 32768,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+    }  
+  MPI_Barrier(MPI_COMM_WORLD);
 }
