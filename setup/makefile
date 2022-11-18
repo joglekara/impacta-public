@@ -14,7 +14,7 @@ COMPILER = mpicxx
 #DBGFLAGS = -v -g -O0 -Wall -pedantic
 
 # INTEL compilers
-OPTFLAGS = -O3
+OPTFLAGS = -std=c++14 -v
 DBGFLAGS = -g -O0 -Wall -pedantic
 
 SOURCES = impacta_main.cpp 
